@@ -5,6 +5,41 @@ rules:
     - intent: handoff
     - action: utter_greet
 
+  - rule: receive email from user
+    steps:
+    - intent: user_email_form
+    - action: utter_ask_email
+    - action: get_all_user_incidents
+    - active_loop: get_all_user_incidents
+
+  - rule: submit email
+    condition:
+      - active_loop: get_all_user_incidents
+    steps:
+    - action: get_all_user_incidents
+    - active_loop: null
+    - action: action_get_all_user_incidents
+
+  - rule: start feedback message
+    steps:
+    - intent: feedback_form
+    - action: utter_feedback_hello
+    - action: create_new_feedback
+    - active_loop: create_new_feedback
+
+  - rule: submit feedback message
+    condition:
+      - active_loop: create_new_feedback
+    steps:
+    - action: create_new_feedback
+    - active_loop: null
+    - action: action_create_new_feedback
+
+  - rule: Create account of user
+    steps:
+    - intent: utter_greet
+    - action: action_create_user_profile
+
   - rule: Ask the user to rephrase whenever they send a message with low NLU confidence
     steps:
     - intent: nlu_fallback

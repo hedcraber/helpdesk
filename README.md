@@ -1,5 +1,20 @@
 # Rasa Helpdesk Assistant Example
 
+
+Лабораторная работа 3\4. Бот Rasa Helpdesk-Assistant. Работу выполнили студенты группы Дьяков Владислав(БПМ-19-1), Михаил Мырзаханов(БПМ-19-1), Левчук Иван(БПМ-19-4)
+
+В рамках 3-й ЛР мы запустили чат бота, изучили структуру проекта и проанализировали работу. Нами было выявлено, что в чатбот можно добавить дополнительный полезный функционал.
+БД реализована на SQLite. В отдельном файле созданы методы, где прописаны запросы к БД. Мы считываем, записываем и выводим информацию, которая необходима пользователю в конкретных случаях.
+
+В рамках 4-й ЛР мы реализовали дополнительный функционал.
+
+Личный кабинет пользователя. Пользователь может ввести комманды "Account", "My profile" или похожую и после ввода своей почты сможет посмотреть, какие заявки были оставленны с данного эмейл адреса. Если эмейл не зарегестрирован, то высветится предупрежедение.
+
+Отзыв о работе чат бота. Пользователь может ввести комманду "Feedback" и после этого ввести своё обращение, которое сохраняется в БД.
+
+
+
+
 This is a Rasa chatbot example demonstrating how to build an AI assistant for an IT Helpdesk. It includes an integration with the Service Now API to open incident reports and check on incident report statuses. Below is an example conversation, showing the bot helping a user open a support ticket and query its status. You can use this chatbot as a starting point for building customer service assistants or as a template for collecting required pieces of information from a user before making an API call.
 
 Here is an example of a conversation you can have with this bot:

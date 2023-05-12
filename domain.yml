@@ -11,6 +11,8 @@ intents:
 - thank
 - help
 - problem_email
+- - feedback_form
+  - user_email_form
 - open_incident:
     use_entities: []
 - incident_status
@@ -107,6 +109,32 @@ slots:
       conditions:
       - active_loop: open_incident_form
         requested_slot: incident_title
+  user_email:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type : from_text
+        not_intent:
+          - incident_status
+          - bot_challenge
+          - affirm
+          - deny
+        conditions:
+          - active_loop: get_all_user_incidents
+            requested_slot: user_email
+  feedback_message:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type : from_text
+        not_intent:
+          - incident_status
+          - bot_challenge
+          - affirm
+          - deny
+        conditions:
+          - active_loop: create_new_feedback
+            requested_slot: feedback_message
   priority:
     type: text
     influence_conversation: false
@@ -142,15 +170,37 @@ slots:
     mappings:
     - type: from_entity
       entity: handoff_to
+  user_name:
+    type: text
+    mappings:
+      - type: custom
+
+  user_profile_updated:
+    type: bool
+    initial_value: False
+    mappings:
+      - type: custom
 responses:
+  utter_feedback_hello:
+  - text: Enter your message in the field below.
+  utter_feedback_accepted:
+  - text: Your feedback has been received. Thank you!
+  utter_user_no_profile_created:
+  - text: Welcome to our Helpdesk Assistant bot. Enter your Name and Email to sign up or sign in.
+  utter_show_user_email:
+  - text: Now you are logged in. Your Email is {email}
+  utter_user_profile_created:
+  - text: "Your personal account has been created or updated. \nNow you can ask me for help. Type \"help\" for assistance."
+  utter_user_profile_updated:
+  - text: Your personal account has been updated.
   utter_out_of_scope:
   - text: Sorry, I'm not sure how to respond to that. Type "help" for assistance.
   utter_greet:
-  - text: Hallo! I'm your IT Helpdesk Assistant.
+  - text: Hello! I'm your IT Helpdesk Assistant.
   utter_goodbye:
   - text: Goodbye!
   utter_iamabot:
-  - text: I am a bot, powered by Rasa.
+  - text: I am a bot, powered by Rasa. Custom actions from students from NUST MISIS. 2023
   utter_ask_email:
   - text: What is your email address?
   utter_ask_incident_title:
@@ -171,7 +221,7 @@ responses:
   utter_no_email:
   - text: Sorry, "{email}" isn't in our incident management system. Please try again.
   utter_help:
-  - text: "I can help you open a service request ticket, or check the status of your open incidents. \nYou can ask me things like: \n- Open an incident \n- Help me reset my password \n- I'm having a issue with my email \n- What's the status of the ticket I opened?"
+  - text: "I can help you open a service request ticket, or check the status of your open incidents. \nYou can ask me things like: \n- Open an incident \n- Help me reset my password \n- I'm having a issue with my email \n- What's the status of the ticket I opened? \n- My account \n- Feedback "
   utter_welcome:
   - text: You're welcome!
   utter_default:
@@ -198,6 +248,16 @@ responses:
   utter_no_handoff:
   - text: Since you haven't configured a host to hand off to, I can't send you anywhere!
 forms:
+  get_all_user_incidents:
+    required_slots:
+    - user_email
+  create_new_feedback:
+    required_slots:
+    - feedback_message
+  create_or_update_profile:
+    required_slots:
+    - email
+    - user_name
   open_incident_form:
     ignored_intents: []
     required_slots:
@@ -218,3 +278,6 @@ actions:
 - action_open_incident
 - validate_open_incident_form
 - validate_incident_status_form
+- action_create_user_profile
+- action_create_new_feedback
+- action_get_all_user_incidents

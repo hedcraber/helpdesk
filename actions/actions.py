@@ -6,6 +6,11 @@ from rasa_sdk.forms import FormValidationAction
 from rasa_sdk.events import AllSlotsReset, SlotSet
 from actions.snow import SnowAPI
 import random
+from rasa_sdk import Action
+from rasa_sdk.events import SlotSet
+from .database import connect_to_db, create_tables,  \
+     add_feedback, add_feedback_tables, get_user_incident, add_or_update_user_incidents
+
 
 
 logger = logging.getLogger(__name__)
@@ -97,16 +102,17 @@ class ActionOpenIncident(Action):
         return "action_open_incident"
 
     def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: Dict[Text, Any],
+            self,
+            dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any],
     ) -> List[Dict]:
         """Create an incident and return details or
         if localmode return incident details as if incident
         was created
         """
-
+        conn = connect_to_db("users.db")
+        create_tables(conn)
         priority = tracker.get_slot("priority")
         email = tracker.get_slot("email")
         problem_description = tracker.get_slot("problem_description")
@@ -148,6 +154,9 @@ class ActionOpenIncident(Action):
                     f"{response.get('error')}"
                 )
         dispatcher.utter_message(message)
+
+        add_or_update_user_incidents(conn, str(email), str(priority), str(incident_title), str(problem_description))
+        conn.close()
         return [AllSlotsReset(), SlotSet("previous_email", email)]
 
 
@@ -212,3 +221,64 @@ class ActionCheckIncidentStatus(Action):
 
         dispatcher.utter_message(message)
         return [AllSlotsReset(), SlotSet("previous_email", email)]
+
+class ActionCreateNewUserAccident(Action):
+    def name(self):
+        return "action_create_new_user_accident"
+
+    def run(self, dispatcher, tracker, domain):
+        # Подключение к базе данных и создание таблицы, если она еще не существует
+        conn = connect_to_db("users.db")
+        create_tables(conn)
+
+        # Приветствие пользователя.
+        dispatcher.utter_message(template=f"utter_user_no_profile_created")
+        # Пользователь создаёт аккаунт.
+        # add
+        # add_or_update_user_accident(conn, accident_id, user_id, accident_status, accident_text)
+        # Пользователь создал аккаунт.
+        dispatcher.utter_message(template=f"utter_show_user_email")
+        dispatcher.utter_message(template=f"utter_user_profile_created")
+
+        conn.close()
+
+        return [SlotSet("user_accident_updated", True)]
+
+
+class ActionCreateNewFeedback(Action):
+    def name(self):
+        return "action_create_new_feedback"
+
+    def run(
+            self,
+            dispatcher: "CollectingDispatcher",
+            tracker: Tracker,
+            domain: "DomainDict",
+    ) -> List[Dict[Text, Any]]:
+        """Создаёт сообщение, которое записывается в базу данных."""
+
+        conn = connect_to_db("users.db")
+        add_feedback_tables(conn)
+        message = tracker.get_slot("feedback_message")
+        # message = "Привет. Это тестовый отзыв. Он достаточно длинный чтобы никто не увидел что автор этого сообщения наговнокодил хуйни и пытается её запустить."
+        add_feedback(conn, message)
+        dispatcher.utter_message(template=f"utter_feedback_accepted")
+        return [AllSlotsReset()]
+
+class ActionGetAllUserIncidents(Action):
+    def name(self):
+        return "action_get_all_user_incidents"
+
+    def run(
+            self,
+            dispatcher: "CollectingDispatcher",
+            tracker: Tracker,
+            domain: "DomainDict",
+    ) -> List[Dict[Text, Any]]:
+        """Создаёт сообщение, которое выводит список инцидетов юзера по его эмейлу."""
+        user_email = tracker.get_slot("user_email")
+        conn = connect_to_db("users.db")
+        create_tables(conn)
+        message = get_user_incident(conn, user_email)
+        dispatcher.utter_message(message)
+        return [AllSlotsReset()]

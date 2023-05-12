@@ -1,5 +1,28 @@
 version: "3.0"
 nlu:
+- intent: user_email_form
+  examples: |
+    - All incidents
+    - All my incidents
+    - My incidents
+    - my incidents
+    - Personal account
+    - personal account
+    - account
+    - My account
+    - my account
+    - Account
+- intent: feedback_form
+  examples: |
+    - I want to receive feedback
+    - I want to leave a review
+    - I want to rate a bot
+    - Rate bot
+    - Feedback
+    - Open a feedback
+    - feedback
+    - rate
+    - Rate
 - intent: greet
   examples: |
     - hey
